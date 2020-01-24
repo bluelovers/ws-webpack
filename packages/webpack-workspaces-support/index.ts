@@ -4,6 +4,9 @@ import { workspacesPackagesList } from 'ws-pkg-list';
 import findRoot from '@yarn-tool/find-root';
 import getLogger from 'webpack-log';
 import { inspect } from 'util';
+import { normalize } from 'path';
+
+const name = 'webpack-workspaces-support';
 
 export function newWithWorkspaces(initOptions: {
 	cwd: string | (() => string),
@@ -14,6 +17,8 @@ export function newWithWorkspaces(initOptions: {
 {
 	function withWorkspacesSupport<T extends Configuration>(config: T, ...argv)
 	{
+		let console = getLogger({ name }) as Console;
+
 		let { cwd, tests = [
 			'index.ts',
 			'index.tsx',
@@ -41,21 +46,31 @@ export function newWithWorkspaces(initOptions: {
 			tests = null;
 		}
 
+		console.info(`options`, inspect({
+			...initOptions,
+			cwd,
+			tests,
+		}));
+
 		if (tests)
 		{
-			let console = getLogger({ name: 'webpack-workspaces-support' }) as Console;
-
 			const ws = findRoot({
 				cwd
 			});
 
 			if (ws.hasWorkspace)
 			{
-				let ls = workspacesPackagesList(ws.root, true);
+				let ls = workspacesPackagesList(ws.root, true)
+					.map(v => normalize(v))
+				;
+
+				console.info(`packages list`, inspect(ls));
 
 				config.module.rules
 					.forEach(rule => {
 						let bool: boolean;
+
+						console.debug(`current rule`, inspect(rule));
 
 						if (Array.isArray(rule.include))
 						{
@@ -84,7 +99,9 @@ export function newWithWorkspaces(initOptions: {
 									rule.include = [];
 								}
 								 */
-								(rule.include as string[]).push(...ls)
+								(rule.include as string[]).push(...ls);
+
+								console.debug(`rule after change`, inspect(rule));
 							}
 						}
 						else
