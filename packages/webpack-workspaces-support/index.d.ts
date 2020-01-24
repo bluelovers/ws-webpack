@@ -1,4 +1,6 @@
 import type { Configuration, RuleSetRule } from 'webpack';
+import { ITSValueOrArray } from 'ts-type';
+export declare function testRule(tests: ITSValueOrArray<string | ((rule: RuleSetRule, ...argv: any[]) => boolean)>, rule: RuleSetRule, ...argv: any[]): any;
 export declare function newWithWorkspaces(initOptions?: {
     cwd: string | (() => string);
     tests?: string | string[] | ((rule: RuleSetRule, ...argv: any[]) => boolean);

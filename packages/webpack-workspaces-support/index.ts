@@ -5,8 +5,31 @@ import findRoot from '@yarn-tool/find-root';
 import getLogger from 'webpack-log';
 import { inspect } from 'util';
 import { normalize } from 'path';
+import { ITSValueOrArray } from 'ts-type';
 
 const name = 'webpack-workspaces-support';
+
+export function testRule(tests: ITSValueOrArray<string | ((rule: RuleSetRule, ...argv) => boolean)>, rule: RuleSetRule, ...argv)
+{
+	let bool: boolean;
+
+	if (Array.isArray(tests))
+	{
+		return tests
+			.some(v => testRule(v, rule, ...argv))
+		;
+	}
+	else if (typeof tests === 'function')
+	{
+		bool = tests(rule, ...argv)
+	}
+	else if (rule.test instanceof RegExp)
+	{
+		bool = rule.test.test(tests)
+	}
+
+	return bool;
+}
 
 export function newWithWorkspaces(initOptions: {
 	cwd: string | (() => string),
@@ -74,19 +97,9 @@ export function newWithWorkspaces(initOptions: {
 
 						if (Array.isArray(rule.include))
 						{
-							if (typeof tests === 'function')
-							{
-								bool = tests(rule, ...argv)
-							}
-							else if (rule.test instanceof RegExp)
-							{
-								bool = (tests as string[]).some(v => (rule.test as RegExp).test(v))
-							}
-							else if (typeof rule.test === 'function')
-							{
-								bool = (tests as string[]).some(v => (rule.test as Function)(v))
-							}
-							else
+							bool = testRule(tests, rule, ...argv);
+
+							if (bool == null)
 							{
 								console.warn(`can't handle this rule`, inspect(rule))
 							}

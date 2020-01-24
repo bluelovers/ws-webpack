@@ -48,6 +48,7 @@
   "dependencies": {
     "@types/webpack": "^4.41.3",
     "@yarn-tool/find-root": "^1.0.2",
+    "ts-type": "^1.2.12",
     "webpack-log": "^3.0.1",
     "ws-pkg-list": "^1.0.6"
   },
