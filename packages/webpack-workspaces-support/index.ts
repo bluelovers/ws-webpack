@@ -7,14 +7,17 @@ import { inspect } from 'util';
 
 export function newWithWorkspaces(initOptions: {
 	cwd: string | (() => string),
-	tests?: string | string[] | ((rule: RuleSetRule) => boolean),
+	tests?: string | string[] | ((rule: RuleSetRule, ...argv) => boolean),
 } = {
 	cwd: process.cwd,
 })
 {
-	function webpackConfig<T extends Configuration>(config: T)
+	function withWorkspacesSupport<T extends Configuration>(config: T, ...argv)
 	{
-		let { cwd, tests } = initOptions;
+		let { cwd, tests = [
+			'index.ts',
+			'index.tsx',
+		] } = initOptions;
 
 		if (typeof cwd === 'function')
 		{
@@ -28,6 +31,10 @@ export function newWithWorkspaces(initOptions: {
 		if (typeof tests === 'string')
 		{
 			tests = [tests];
+		}
+		else if (typeof tests === 'function')
+		{
+
 		}
 		else if (!tests.length)
 		{
@@ -54,7 +61,7 @@ export function newWithWorkspaces(initOptions: {
 						{
 							if (typeof tests === 'function')
 							{
-								bool = tests(rule)
+								bool = tests(rule, ...argv)
 							}
 							else if (rule.test instanceof RegExp)
 							{
@@ -71,7 +78,13 @@ export function newWithWorkspaces(initOptions: {
 
 							if (bool)
 							{
-								rule.include.push(...ls)
+								/*
+								if (rule.include == null)
+								{
+									rule.include = [];
+								}
+								 */
+								(rule.include as string[]).push(...ls)
 							}
 						}
 						else
@@ -92,14 +105,12 @@ export function newWithWorkspaces(initOptions: {
 
 	(() => {
 		// @ts-ignore
-		webpackConfig.default = webpackConfig;
+		withWorkspacesSupport.default = withWorkspacesSupport;
 	})();
 
-	return webpackConfig
+	return withWorkspacesSupport
 }
 
-export declare function webpackConfig<T extends Configuration>(config: T): T;
+export const withWorkspacesSupport = newWithWorkspaces();
 
-exports.webpackConfig = newWithWorkspaces();
-
-export default webpackConfig
+export default withWorkspacesSupport
