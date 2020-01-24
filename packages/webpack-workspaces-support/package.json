@@ -1,6 +1,6 @@
 {
   "name": "webpack-workspaces-support",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "tweak webpack config with yarn workspaces",
   "keywords": [
     "tweak",
