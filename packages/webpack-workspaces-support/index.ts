@@ -45,6 +45,9 @@ export function newWithWorkspaces(initOptions: {
 		let { cwd, tests = [
 			'index.ts',
 			'index.tsx',
+			'index.js',
+			'index.jsx',
+			'index.mjs',
 		] } = initOptions;
 
 		if (typeof cwd === 'function')
